@@ -55,7 +55,7 @@ jobs:
       - new-version
     strategy:
       matrix:
-        runtime:
+        include:
           - runtime: win-x64
             ext: .exe
             platform: windows

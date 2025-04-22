@@ -14,23 +14,14 @@ on:
     branches:
       - main
 
-
-# env:
-#   ARTIFACT_PUBLISH_DIRECTORY: ${{ github.workspace }}/artifact_publish
-#   ARTIFACT_STAGING_DIRECTORY: ${{ github.workspace }}/artifact_staging
-#   ARTIFACT_TYPE: 'Production'
-#   BINARIES_DIRECTORY: ${{ github.workspace }}/binaries
-#   BUILD_CONFIGURATION: 'Release'
-#   BUILD_PLATFORM: 'any cpu'
-
 # Set environment variables
 env:
-  artifactPublishDirectory: ${{ github.workspace }}/artifact_publish
-  artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
-  artifactType: 'Production'
-  binariesDirectory: ${{ github.workspace }}/binaries
-  buildConfiguration: 'Release'
-  buildPlatform: 'any cpu'
+  ARTIFACT_PUBLISH_DIRECTORY: ${{ github.workspace }}/artifact_publish
+  ARTIFACT_STAGING_DIRECTORY: ${{ github.workspace }}/artifact_staging
+  ARTIFACT_TYPE: 'Production'
+  BINARIES_DIRECTORY: ${{ github.workspace }}/binaries
+  BUILD_CONFIGURATION: 'Release'
+  BUILD_PLATFORM: 'any cpu'
 
 jobs:
   new-version:
@@ -80,7 +71,7 @@ jobs:
             ext: ""
 
     env:
-      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+      BUILD_VERSION: ${{ needs.new-version.outputs.buildVersion }}
 
     steps:
       - name: Checkout Workflow Repository
@@ -126,7 +117,7 @@ jobs:
       - publish-platform-specific
 
     env:
-      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+      BUILD_VERSION: ${{ needs.new-version.outputs.buildVersion }}
 
     steps:
     - name: Checkout repository
@@ -135,19 +126,19 @@ jobs:
     - name: Download Build Artifacts
       uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }}/artifact_staging
+        path: ${{ github.workspace }}/artifact_staging/files
 
     - name: Flatten downloaded artifacts
       shell: pwsh
       run: |
-        Get-ChildItem -Path "${{ github.workspace }}/artifact_staging" -Recurse -File | Move-Item -Destination "${{ github.workspace }}/artifact_staging" -Force -ErrorAction SilentlyContinue
+        Get-ChildItem -Path "${{ github.workspace }}/artifact_staging/files" -Recurse -File | Move-Item -Destination "${{ github.workspace }}/artifact_staging" -Force -ErrorAction SilentlyContinue
 
-    - name: Create GitHub Release & Tag v${{ env.buildVersion }}
+    - name: Create GitHub Release & Tag v${{ env.BUILD_VERSION }}
       uses: softprops/action-gh-release@v2
       with:
         files: ${{ github.workspace }}/artifact_staging/*
-        tag_name: v${{ env.buildVersion }}
-        name: ${{ env.artifactType }} v${{ env.buildVersion }}
+        tag_name: v${{ env.BUILD_VERSION }}
+        name: ${{ env.ARTIFACT_TYPE }} v${{ env.BUILD_VERSION }}
         generate_release_notes: true
 
       env:

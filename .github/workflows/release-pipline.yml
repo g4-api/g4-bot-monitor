@@ -99,14 +99,14 @@ jobs:
         shell: pwsh
         run: |
           $source = Get-Item "${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/G4.Bots.Monitor*"
-          $target = "${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}"
+          $target = "${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor-${{ matrix.runtime }}${{ matrix.ext }}"
           Move-Item -Path $source.FullName -Destination $target
 
-      - name: Upload Artifact ${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+      - name: Upload Artifact ${{ matrix.runtime }}/g4-bot-monitor-${{ matrix.runtime }}${{ matrix.ext }}
         uses: actions/upload-artifact@v4
         with:
           name: g4-bot-monitor-${{ matrix.runtime }}
-          path: ${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+          path: ${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor-${{ matrix.runtime }}${{ matrix.ext }}
 
   new-release:
     name: New GitHub Release Version ${{ needs.new-version.outputs.buildVersion }}

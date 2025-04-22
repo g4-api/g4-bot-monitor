@@ -93,11 +93,14 @@ jobs:
             -p:TrimUnusedDependencies=true `
             -p:EnableCompressionInSingleFile=true `
             -p:IncludeAllContentForSelfExtract=true `
-            -o ./publish/${{ matrix.runtime }}
+            -o ${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}
 
       - name: Rename Binary
+        shell: pwsh
         run: |
-          mv ./publish/${{ matrix.runtime }}/G4.Bots.Monitor* ./publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+          $source = Get-Item "${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/G4.Bots.Monitor*"
+          $target = "${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}"
+          Move-Item -Path $source.FullName -Destination $target
 
       - name: Upload Artifact ${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
         uses: actions/upload-artifact@v4

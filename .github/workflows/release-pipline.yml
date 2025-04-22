@@ -14,6 +14,15 @@ on:
     branches:
       - main
 
+
+# env:
+#   ARTIFACT_PUBLISH_DIRECTORY: ${{ github.workspace }}/artifact_publish
+#   ARTIFACT_STAGING_DIRECTORY: ${{ github.workspace }}/artifact_staging
+#   ARTIFACT_TYPE: 'Production'
+#   BINARIES_DIRECTORY: ${{ github.workspace }}/binaries
+#   BUILD_CONFIGURATION: 'Release'
+#   BUILD_PLATFORM: 'any cpu'
+
 # Set environment variables
 env:
   artifactPublishDirectory: ${{ github.workspace }}/artifact_publish
@@ -131,7 +140,7 @@ jobs:
     - name: Flatten downloaded artifacts
       shell: pwsh
       run: |
-        Get-ChildItem -Path "${{ github.workspace }}/artifact_staging" -Recurse -File | Move-Item -Destination "${{ github.workspace }}/artifact_staging" -Force
+        Get-ChildItem -Path "${{ github.workspace }}/artifact_staging" -Recurse -File | Move-Item -Destination "${{ github.workspace }}/artifact_staging" -Force -ErrorAction SilentlyContinue
 
     - name: Create GitHub Release & Tag v${{ env.buildVersion }}
       uses: softprops/action-gh-release@v2

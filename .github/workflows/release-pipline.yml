@@ -97,7 +97,7 @@ jobs:
 
       - name: Rename Binary
         run: |
-          mv ./publish/${{ matrix.runtime }}/G4.Bots.Monitor${{ matrix.ext }} ./publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+          mv ./publish/${{ matrix.runtime }}/G4.Bots.Monitor* ./publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
 
       - name: Upload Artifact ${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
         uses: actions/upload-artifact@v4

@@ -43,7 +43,6 @@ AssemblyLoadContext.Default.Unloading += (_) =>
 var arguments = FormatArguments(args);
 var hubUri = string.Empty;
 var listenerUri = string.Empty;
-var port = -1;
 
 // Confirm and validate the required parameters
 try
@@ -51,12 +50,10 @@ try
     // Confirm and clean the URI and port input values
     hubUri = ConfirmUri($"{arguments["HubUri"]}");
     listenerUri = $"{arguments["ListenerUri"]}";
-    port = ConfirmNumber($"{arguments["ListenerPort"]}");
 
     // Update the argument dictionary with normalized values
     arguments["HubUri"] = hubUri;
     arguments["ListenerUri"] = listenerUri;
-    arguments["ListenerPort"] = port;
 }
 catch (Exception ex)
 {
@@ -102,7 +99,7 @@ await Register(connection, arguments);
 
 StartBotHttpListener(
     prefix: $"{listenerUri.TrimEnd('/')}/monitor/",
-    updateHandler: (message) => connection.InvokeAsync("UpdateBot", "{\"Status\":\"" + message + "\"}", cancellationTokenSource.Token),
+    updateHandler: (message) => connection.InvokeAsync("UpdateBot", message, cancellationTokenSource.Token),
     cancellationToken: cancellationTokenSource.Token);
 
 // Handle the SignalR connection closed event
@@ -171,16 +168,6 @@ static void AddMetadata(HubConnection connection, Dictionary<string, object> arg
     arguments["OsVersion"] = $"{Environment.OSVersion}";
 }
 
-// Validates and converts a string input to an integer.
-// Throws a FormatException if the input is not a valid number.
-static int ConfirmNumber(string number)
-{
-    // Attempt to parse the trimmed input as an integer
-    return int.TryParse(number.Trim(), out var numberOut)
-        ? numberOut
-        : throw new FormatException($"Invalid number: {number}");
-}
-
 // Validates that the provided URI string is a well-formed absolute HTTP or HTTPS URI.
 // If the URI is invalid or uses an unsupported scheme, the process exits with an error message.
 static string ConfirmUri(string uri)
@@ -217,7 +204,6 @@ static Dictionary<string, object> FormatArguments(string[] args)
         { "HubUri", "The SignalR hub URI (e.g., http://localhost:9944/hub/v4/g4/bots)." },
         { "Name", "The human-readable name of the bot." },
         { "Type", "The type or category of the bot (e.g., File Listener Bot, Static Bot)." },
-        { "ListenerPort", "The port number on which the listener listens for incoming status requests." },
         { "ListenerUri", "The full endpoint URI where the listener receives status update requests." }
     };
 
@@ -257,7 +243,7 @@ static Dictionary<string, object> FormatArguments(string[] args)
         }
 
         // Split into key and value
-        var split = arg.Substring(2).Split('=', 2);
+        var split = arg[2..].Split('=', 2);
         var key = split[0];
         var value = split[1];
 

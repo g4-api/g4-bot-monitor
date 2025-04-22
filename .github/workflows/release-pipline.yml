@@ -112,7 +112,7 @@ jobs:
           path: ${{ github.workspace }}/artifact_publish/${{ env.FILE_NAME }}
 
   new-release:
-    name: New GitHub Release Version v${{ env.BUILD_VERSION }}
+    name: New GitHub Release Version v${{ needs.new-version.outputs.buildVersion }}
     runs-on: ubuntu-latest
     if: ${{ needs.new-version.result == 'success' && needs.new-version.outputs.validVersion == 'True' && needs.publish-platform-specific.result == 'success' }}
     needs:

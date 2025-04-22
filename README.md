@@ -1,5 +1,7 @@
 ﻿# 🚀 Quick Start: G4 Bot Monitor
 
+[![Build, Test & Release G4™ Bot Monitor](https://github.com/g4-api/g4-bot-monitor/actions/workflows/release-pipline.yml/badge.svg)](https://github.com/g4-api/g4-bot-monitor/actions/workflows/release-pipline.yml)
+
 `g4-bot-monitor` is a lightweight, single-file SignalR client designed to **shadow a bot** and **sync its status** to a central SignalR hub. It also exposes a tiny HTTP listener so the bot can report its own status via local HTTP requests.
 
 ---

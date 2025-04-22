@@ -1,0 +1,139 @@
+# Workflow to build, test, and release OcrInspector for production
+name: Build, Test & Release G4™ Bot Monitor
+
+# Define permissions for the workflow
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+  statuses: write
+
+# Trigger the workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Set environment variables
+env:
+  artifactPublishDirectory: ${{ github.workspace }}/artifact_publish
+  artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+  artifactType: 'Production'
+  binariesDirectory: ${{ github.workspace }}/binaries
+  buildConfiguration: 'Release'
+  buildPlatform: 'any cpu'
+
+jobs:
+  new-version:
+    name: New Version
+    runs-on: ubuntu-latest
+    outputs:
+      buildVersion: ${{ steps.parse-version.outputs.version }}
+      validVersion: ${{ steps.validate-version.outputs.valid }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Parse Build Version for GitHub Tag
+      id: parse-version
+      shell: pwsh
+      run: echo "version=$(Get-Date -UFormat '%Y.%m.%d').${{ github.run_number }}" >> $env:GITHUB_OUTPUT
+
+    - name: Validate Version ${{ steps.parse-version.outputs.version }}
+      id: validate-version
+      shell: pwsh
+      run: |
+        $version = "${{ steps.parse-version.outputs.version }}"
+        echo "valid=$($version -match '^\d+(\.\d+){3}$')" >> $env:GITHUB_OUTPUT
+  
+  publish-platform-specific:
+    name: Publish Monitor for Platform ${{ matrix.runtime }}
+    runs-on: ubuntu-latest
+    if: ${{ needs.new-version.result == 'success' && needs.new-version.outputs.validVersion == 'True' }}
+    needs:
+      - new-version
+    strategy:
+      matrix:
+        runtime:
+          - win-x64
+          - linux-x64
+          - linux-arm64
+          - osx-arm64
+        include:
+          - runtime: win-x64
+            ext: .exe
+          - runtime: linux-x64
+            ext: ""
+          - runtime: linux-arm64
+            ext: ""
+          - runtime: osx-arm64
+            ext: ""
+
+    env:
+      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+
+    steps:
+      - name: Checkout Workflow Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8
+
+      - name: Publish ${{ matrix.runtime }} Binary
+        shell: pwsh
+        run: |
+            dotnet publish src/G4.Bots.Monitor/G4.Bots.Monitor.csproj \
+            -c Release \
+            -r ${{ matrix.runtime }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:TrimUnusedDependencies=true \
+            -p:EnableCompressionInSingleFile=true \
+            -p:IncludeAllContentForSelfExtract=true \
+            -o ./publish/${{ matrix.runtime }}
+
+      - name: Rename Binary
+        run: |
+          mv ./publish/${{ matrix.runtime }}/G4.Bots.Monitor${{ matrix.ext }} ./publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+
+      - name: Upload Artifact ${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4-bot-monitor-${{ matrix.runtime }}
+          path: ${{ github.workspace }}/artifact_publish/${{ matrix.runtime }}/g4-bot-monitor${{ matrix.ext }}
+
+  
+  new-release:
+    name: New GitHub Release Version ${{ needs.new-version.outputs.buildVersion }}
+    runs-on: ubuntu-latest
+    if: ${{ needs.new-version.result == 'success' && needs.new-version.outputs.validVersion == 'True' && needs.invoke-api-tests.result == 'success' }}
+    needs:
+      - invoke-api-tests
+      - new-version
+      - publish-hub-standalone
+
+    env:
+      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ${{ github.workspace }}/artifact_staging
+
+    - name: Create GitHub Release & Tag v${{ env.buildVersion }}
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ github.workspace }}/artifact_staging/*
+        tag_name: v${{ env.buildVersion }}
+        name: ${{ env.artifactType }} v${{ env.buildVersion }}
+        generate_release_notes: true
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -111,9 +111,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.new-version.result == 'success' && needs.new-version.outputs.validVersion == 'True' && needs.invoke-api-tests.result == 'success' }}
     needs:
-      - invoke-api-tests
       - new-version
-      - publish-hub-standalone
+      - publish-platform-specific
 
     env:
       buildVersion: ${{ needs.new-version.outputs.buildVersion }}

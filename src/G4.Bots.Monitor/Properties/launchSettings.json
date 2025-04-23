@@ -2,7 +2,7 @@
   "profiles": {
     "G4.Bots.Monitor": {
       "commandName": "Project",
-      "commandLineArgs": "--HubUri=http://localhost:9944 --Name=g4-static-bot --Type=static-bot --ListenerUri=http://localhost:8080/bot/v1/g4-static-bot"
+      "commandLineArgs": "--HubUri=http://localhost:9944 --Name=g4-static-bot --Type=static-bot --ListenerUri=http://localhost:8080/bot/v1/g4-static-bot --Id=1234567890"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker"

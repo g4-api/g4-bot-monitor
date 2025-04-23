@@ -43,6 +43,7 @@ AssemblyLoadContext.Default.Unloading += (_) =>
 var arguments = FormatArguments(args);
 var hubUri = string.Empty;
 var listenerUri = string.Empty;
+var botId = string.Empty;
 
 // Confirm and validate the required parameters
 try
@@ -50,10 +51,12 @@ try
     // Confirm and clean the URI and port input values
     hubUri = ConfirmUri($"{arguments["HubUri"]}");
     listenerUri = $"{arguments["ListenerUri"]}";
+    botId = $"{arguments["Id"]}";
 
     // Update the argument dictionary with normalized values
     arguments["HubUri"] = hubUri;
     arguments["ListenerUri"] = listenerUri;
+    arguments["Id"] = botId;
 }
 catch (Exception ex)
 {
@@ -89,7 +92,7 @@ Console.CancelKeyPress += (sender, e) =>
 };
 
 // Enrich the argument dictionary with runtime metadata (e.g., machine, OS, container flag)
-AddMetadata(connection, arguments);
+AddMetadata(arguments);
 
 // Attempt to connect to the hub (with retry logic)
 await Connect(connection);
@@ -98,7 +101,7 @@ await Connect(connection);
 await Register(connection, arguments);
 
 StartBotHttpListener(
-    prefix: $"{listenerUri.TrimEnd('/')}/monitor/",
+    prefix: $"{listenerUri.TrimEnd('/')}/monitor/{botId}/",
     updateHandler: (message) => connection.InvokeAsync("UpdateBot", message, cancellationTokenSource.Token),
     cancellationToken: cancellationTokenSource.Token);
 
@@ -156,11 +159,8 @@ await Task.Delay(Timeout.Infinite, cancellationTokenSource.Token);
 
 // Adds runtime metadata to the bot's registration argument dictionary.
 // Includes connection ID, environment info, and container status flag.
-static void AddMetadata(HubConnection connection, Dictionary<string, object> arguments)
+static void AddMetadata(Dictionary<string, object> arguments)
 {
-    // Assign the SignalR connection ID
-    arguments["Id"] = connection.ConnectionId;
-
     // Add machine hostname
     arguments["Machine"] = Environment.MachineName;
 
@@ -204,7 +204,8 @@ static Dictionary<string, object> FormatArguments(string[] args)
         { "HubUri", "The SignalR hub URI (e.g., http://localhost:9944/hub/v4/g4/bots)." },
         { "Name", "The human-readable name of the bot." },
         { "Type", "The type or category of the bot (e.g., File Listener Bot, Static Bot)." },
-        { "ListenerUri", "The full endpoint URI where the listener receives status update requests." }
+        { "ListenerUri", "The full endpoint URI where the listener receives status update requests." },
+        { "Id", "The unique identifier of the bot instance used for hub registration and tracking." }
     };
 
     // Show help if the --help flag is passed

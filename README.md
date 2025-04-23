@@ -9,17 +9,18 @@
 ## ⚙️ CLI Usage
 
 ```bash
-g4-bot-monitor --HubUri=<hub-url> --Name=<bot-name> --Type=<bot-type> --ListenerUri=<listener-url>
+g4-bot-monitor --HubUri=<hub-url> --Name=<bot-name> --Type=<bot-type> --ListenerUri=<listener-url> --Id=<bot-id>
 ```
 
 All parameters are **required**:
 
-| Parameter        | Description                                                                 |
-|------------------|-----------------------------------------------------------------------------|
-| `--HubUri`       | SignalR hub URL (e.g., `http://localhost:9944`)                             |
-| `--Name`         | Human-readable bot name (e.g., `"InvoiceBot"`)                              |
-| `--Type`         | Bot type/category (e.g., `"Static Bot"`, `"File Listener"`)                 |
-| `--ListenerUri`  | Base URI where the monitor listens (e.g., `http://localhost:8080`)          |
+| Parameter        | Description                                                                       |
+|------------------|-----------------------------------------------------------------------------------|
+| `--HubUri`       | SignalR hub URL (e.g., `http://localhost:9944`)                                   |
+| `--Name`         | Human-readable bot name (e.g., `"InvoiceBot"`)                                    |
+| `--Type`         | Bot type/category (e.g., `"Static Bot"`, `"File Listener"`)                       |
+| `--ListenerUri`  | Base URI where the monitor listens (e.g., `http://localhost:8080`)                |
+| `--Id`           | The unique identifier of the bot instance used for hub registration and tracking. |
 
 ---
 
@@ -28,7 +29,7 @@ All parameters are **required**:
 After startup, the monitor begins listening at:
 
 ```
-<ListenerUri>/monitor/
+<ListenerUri>/monitor/<Id>/
 ```
 
 ### ✅ 1. `GET /monitor/ping`
@@ -89,7 +90,8 @@ curl -X POST http://localhost:8080/monitor/update \
   --HubUri=http://localhost:9944 \
   --Name=Bot42 \
   --Type="Static Bot" \
-  --ListenerUri=http://localhost:8080
+  --ListenerUri=http://localhost:8080 \
+  --Id=1234567890
 ```
 
 ---

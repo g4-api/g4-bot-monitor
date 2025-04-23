@@ -16,7 +16,7 @@ All parameters are **required**:
 
 | Parameter        | Description                                                                 |
 |------------------|-----------------------------------------------------------------------------|
-| `--HubUri`       | SignalR hub URL (e.g., `http://localhost:9944/hub/v4/g4/bots`)              |
+| `--HubUri`       | SignalR hub URL (e.g., `http://localhost:9944`)                             |
 | `--Name`         | Human-readable bot name (e.g., `"InvoiceBot"`)                              |
 | `--Type`         | Bot type/category (e.g., `"Static Bot"`, `"File Listener"`)                 |
 | `--ListenerUri`  | Base URI where the monitor listens (e.g., `http://localhost:8080`)          |
@@ -86,7 +86,7 @@ curl -X POST http://localhost:8080/monitor/update \
 
 ```bash
 ./g4-bot-monitor-linux-x64 \
-  --HubUri=http://localhost:9944/hub/v4/g4/bots \
+  --HubUri=http://localhost:9944 \
   --Name=Bot42 \
   --Type="Static Bot" \
   --ListenerUri=http://localhost:8080

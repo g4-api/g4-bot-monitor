@@ -337,7 +337,7 @@ static async Task InvokeRetriableAction(string actionName, Func<Task> action)
     Console.ResetColor();
 }
 
-static void StartBotHttpListener(string prefix, Func<string, Task> updateHandler, CancellationToken cancellationToken)
+static void StartBotHttpListener(string prefix, Func<object, Task> updateHandler, CancellationToken cancellationToken)
 {
     // Health‑check endpoint.
     // Always returns HTTP 200 with the plain‑text body “pong”.
@@ -362,13 +362,14 @@ static void StartBotHttpListener(string prefix, Func<string, Task> updateHandler
     // • HTTP 500 and the exception message when it throws
     static async Task Update(
         HttpListenerContext context,
-        Func<string, Task> updateHandler,
+        Func<object, Task> updateHandler,
         CancellationToken cancellationToken)
     {
         // Read the request body as a string, using the encoding specified by the client.
         // HttpListener exposes the request body as a raw stream, so a StreamReader is needed.
         using var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding);
         var body = await reader.ReadToEndAsync(cancellationToken);
+        var jsonRequestBody = JsonSerializer.Deserialize<Dictionary<string, object>>(body);
 
         // Set content type to JSON, so the client knows what to expect.
         context.Response.ContentType = "application/json; charset=utf-8";
@@ -377,16 +378,16 @@ static void StartBotHttpListener(string prefix, Func<string, Task> updateHandler
         {
             // Delegate domain‑specific work to the supplied handler.
             // Any exception thrown here will be caught and turned into a 500 response.
-            await updateHandler(body);
+            await updateHandler(jsonRequestBody);
 
             // Set status code to 200 OK, so the client knows the request was processed.
             context.Response.StatusCode = (int)HttpStatusCode.OK;
 
             // Convert the literal response text to a UTF‑8 byte array.
-            var jsonBody = Encoding.UTF8.GetBytes(@"{""message"":""Connected bot successfuly updated.""}");
+            var jsonResponseBody = Encoding.UTF8.GetBytes(@"{""message"":""Connected bot successfuly updated.""}");
 
             // Write the body to the output stream. The token lets the operation
-            await context.Response.OutputStream.WriteAsync(jsonBody, cancellationToken);
+            await context.Response.OutputStream.WriteAsync(jsonResponseBody, cancellationToken);
         }
         catch (Exception e)
         {
@@ -435,11 +436,11 @@ static void StartBotHttpListener(string prefix, Func<string, Task> updateHandler
 
                 // Determine if this is a GET request to /ping
                 var isGet = context.Request.HttpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase);
-                var isPing = isGet && context.Request.Url?.AbsolutePath.ToLower() == "/ping";
+                var isPing = isGet && context.Request.Url?.AbsolutePath.EndsWith("/ping", StringComparison.OrdinalIgnoreCase) == true;
 
                 // Determine if this is a POST request to /update
                 var isPost = context.Request.HttpMethod.Equals("POST", StringComparison.OrdinalIgnoreCase);
-                var isUpdate = isPost && context.Request.Url?.AbsolutePath.ToLower() == "/update";
+                var isUpdate = isPost && context.Request.Url?.AbsolutePath.EndsWith("/update", StringComparison.OrdinalIgnoreCase) == true;
 
                 // Handle ping: respond with "pong"
                 if (isPing)

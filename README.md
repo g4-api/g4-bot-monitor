@@ -9,7 +9,7 @@
 ## ⚙️ CLI Usage
 
 ```bash
-g4-bot-monitor --HubUri=<hub-url> --Name=<bot-name> --Type=<bot-type> --ListenerUri=<listener-url> --ListenerPort=<port>
+g4-bot-monitor --HubUri=<hub-url> --Name=<bot-name> --Type=<bot-type> --ListenerUri=<listener-url>
 ```
 
 All parameters are **required**:

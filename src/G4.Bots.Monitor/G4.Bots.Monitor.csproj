@@ -8,8 +8,10 @@
 		<TrimUnusedDependencies>true</TrimUnusedDependencies>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+		<!--
 		<DebugType>none</DebugType>
 		<DebugSymbols>false</DebugSymbols>
+		-->
 	</PropertyGroup>
 
 	<ItemGroup>

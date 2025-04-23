@@ -36,7 +36,6 @@ AssemblyLoadContext.Default.Unloading += (_) =>
 {
     Console.WriteLine("Unloading triggered. Application domain is shutting down.");
     cancellationTokenSource.Cancel();
-    cancellationTokenSource.Dispose();
 };
 
 // Parse and validate CLI arguments
@@ -153,6 +152,9 @@ connection.On<string>("ReceiveHeartbeat", Console.WriteLine);
 
 // Write a message to the console when a bot is registered
 connection.On<string>("ReceiveRegisterBot", Console.WriteLine);
+
+// Exits the application when the SignalR hub sends a "stop" message
+connection.On("StopMonitor", () => Environment.Exit(0));
 
 // Keep the application running
 await Task.Delay(Timeout.Infinite, cancellationTokenSource.Token);

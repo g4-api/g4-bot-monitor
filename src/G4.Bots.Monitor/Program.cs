@@ -157,11 +157,7 @@ connection.On<string>("ReceiveRegisterBot", Console.WriteLine);
 connection.On("StopMonitor", () => Environment.Exit(0));
 
 // Exits the application when the SignalR hub sends a "stop" message
-connection.On("StopBot", () =>
-{
-    // Close bot /stop
-    Environment.Exit(0);
-});
+connection.On("StopBot", () => Environment.Exit(0));
 
 // Keep the application running
 await Task.Delay(Timeout.Infinite, cancellationTokenSource.Token);
